@@ -108,3 +108,5 @@ kaneeq = kane.kane.kanes_equations()
 A = kane.A
 B = kane.B
 
+print(A[31:33,13:15])
+print(A[25:27, 13:15])
