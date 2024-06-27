@@ -21,6 +21,8 @@ from IPython.display import display
 from suspycious import Model
 import suspycious.components as scmp
 
+from utils import add_points, get_tension_dirs, give_deltas, give_tensions
+
 model2 = Model()
 S = model2.add(scmp.RigidBody("S"))
 B = model2.add(scmp.RigidBody("B"))
@@ -56,80 +58,7 @@ d7, n7, w7 = symbols('d7 n7 w7', real=True, positive=True)
 d8, d9 = symbols('d8 d9', real=True, positive=True)
 
 
-def add_points(body, point='P', attachment_points=[w1, n1, d1]):
-    points = [Point('{}{}'.format(point,j)) for j in range(1,5)]
-    
-    points_ = [str(i) for i in points]
-    
-    w_ = attachment_points[0]
-    n_ = attachment_points[1]
-    d_ = attachment_points[2]
-    
-    
-    body.add_fixed_point(points_[0], dx = w_, dy = -n_, dz = d_)
-    body.add_fixed_point(points_[1], dx = w_, dy = n_, dz = d_)
-    body.add_fixed_point(points_[2], dx = -w_, dy = -n_, dz = d_)
-    body.add_fixed_point(points_[3], dx = -w_, dy = n_, dz = d_)
-
-    return
-
-def get_tension_dirs(body1, body2, points_1='top', points_2='top'):
-    
-    body1_points = list(body1.points.values())
-    body2_points = list(body2.points.values())
-    
-    if points_1 == 'top':
-        body1_points = body1_points[:4]
-    else:
-        body1_points = body1_points[4:]
-    if points_2 == 'top':
-        body2_points = body2_points[:4]
-    else:
-        body2_points = body2_points[4:]
-        
-    print(body1_points)
-    print(body2_points)
-    
-    ten_dirs = [i.pos_from(j).express(S.global_frame).normalize() for i,j in list(zip(body1_points, body2_points))]
-        
-    return ten_dirs
-    
-    
-def give_deltas(body1, body2, points_1='top', points_2='top'):
-    
-    body1_points = list(body1.points.values())
-    body2_points = list(body2.points.values())
-    
-    if points_1 == 'top':
-        body1_points = body1_points[:4]
-    else:
-        body1_points = body1_points[4:]
-    if points_2 == 'top':
-        body2_points = body2_points[:4]
-    else:
-        body2_points = body2_points[4:]
-        
-    points_ = list(zip(body1_points, body2_points))
-    
-    print(points_)
-    
-    deltas_ = [i.pos_from(j).express(S.global_frame).magnitude() - i.pos_from(j).express(S.global_frame).subs(model2.op_point).magnitude() 
-              for i,j in points_]
-    return deltas_
-    
-    
-def give_tensions(n_body=1, k=k1, delta_values=None):
-    
-    n = n_body -1
-    
-    #masses = [B.M, C.M, D.M, F.M]
-    masses_ = masses[n:]
-    
-    tensions = [sp.Rational(1,4)*(np.sum(masses_))*g + k*i for i in delta_values]
-        
-    return tensions 
-
-
+#Adding points to the bodies
 
 add_points(body=S, point='P', attachment_points=[w1, n1, 0])
 
@@ -146,25 +75,26 @@ add_points(body=F, point='H', attachment_points=[w4, n4, d7])
 add_points(body=F, point='J', attachment_points=[w5, n5, -d8])
 
 
-dirT11, dirT12, dirT13, dirT14 = get_tension_dirs(body1=S,points_1='top', body2=B, points_2='top')
-dirT21, dirT22, dirT23, dirT24 = get_tension_dirs(body1=B,points_1='bottom', body2=C, points_2='top')
+# Getting tension direction
+dirT11, dirT12, dirT13, dirT14 = get_tension_dirs(body1=S,points_1='top', body2=B, points_2='top', suspension_body=S )
+dirT21, dirT22, dirT23, dirT24 = get_tension_dirs(body1=B,points_1='bottom', body2=C, points_2='top',suspension_body=S)
 
-dirT31, dirT32, dirT33, dirT34 = get_tension_dirs(body1=C,points_1='bottom', body2=D, points_2='top')
-dirT41, dirT42, dirT43, dirT44 = get_tension_dirs(body1=D,points_1='bottom', body2=F, points_2='top')
+dirT31, dirT32, dirT33, dirT34 = get_tension_dirs(body1=C,points_1='bottom', body2=D, points_2='top',suspension_body=S)
+dirT41, dirT42, dirT43, dirT44 = get_tension_dirs(body1=D,points_1='bottom', body2=F, points_2='top',suspension_body=S)
 
-
-delta_SB = give_deltas(body1=S, body2=B )
-delta_BC = give_deltas(body1=B, body2=C, points_1='bottom', points_2='top' )
-delta_CD = give_deltas(body1=C, body2=D, points_1='bottom', points_2='top' )
-delta_DF = give_deltas(body1=D, body2=F, points_1='bottom', points_2='top' )
+#Getting deltas
+delta_SB = give_deltas(body1=S, body2=B, suspension_body=S, model=model2)
+delta_BC = give_deltas(body1=B, body2=C, points_1='bottom', points_2='top', suspension_body=S, model=model2)
+delta_CD = give_deltas(body1=C, body2=D, points_1='bottom', points_2='top',suspension_body=S, model=model2)
+delta_DF = give_deltas(body1=D, body2=F, points_1='bottom', points_2='top',suspension_body=S, model=model2)
 
 masses = [B.M, C.M, D.M, F.M]
 
-
-T11, T12, T13, T14 = give_tensions(n_body=1, k=k1, delta_values=delta_SB)
-T21, T22, T23, T24 = give_tensions(n_body=2, k=k2, delta_values=delta_BC)
-T31, T32, T33, T34 = give_tensions(n_body=3, k=k3, delta_values=delta_CD)
-T41, T42, T43, T44 = give_tensions(n_body=4, k=k4, delta_values=delta_DF)
+#Getting expression of Tensions
+T11, T12, T13, T14 = give_tensions(n_body=1, k=k1, delta_values=delta_SB, masses=masses)
+T21, T22, T23, T24 = give_tensions(n_body=2, k=k2, delta_values=delta_BC, masses=masses)
+T31, T32, T33, T34 = give_tensions(n_body=3, k=k3, delta_values=delta_CD, masses=masses)
+T41, T42, T43, T44 = give_tensions(n_body=4, k=k4, delta_values=delta_DF, masses=masses)
 
 print("Prepared the system, now applying forces")
 
