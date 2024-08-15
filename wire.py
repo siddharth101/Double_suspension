@@ -32,14 +32,17 @@ def make_wire(n):
         j+=2
         
     
-    # Creating Wall and bodies
+    # Creating Wall and adding it to the system 
     wall = RigidBody('W', masscenter=O, frame=N)
     system = System.from_newtonian(wall)
-    
+   
+    # Aligning N with system frame
     N.orient_axis(system.frame, 0, system.frame.z)
     
+    # Rotating the frames wrt system frame  
     [i.orient_axis(system.frame, j, system.frame.z) for i,j in list(zip(frames, angles))]
-    
+
+    # Creating the bodies
     bodies = [RigidBody('B{}'.format(h), mass=i*j, masscenter=k, frame=l) for h,i,j,k,l in list(zip(range(1,n+2), betas,masses, ps, frames))]
     
     # Adding bodies to the system
