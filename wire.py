@@ -1,7 +1,7 @@
 from sympy import zeros, symbols
 from sympy.physics.mechanics import dynamicsymbols, ReferenceFrame
-from sympy.physics.mechanics import ReferenceFrame, Point, RigidBody, Particle, System, LinearPathway, Force
-
+from sympy.physics.mechanics import ReferenceFrame, Point, RigidBody, Particle, System,  Force
+from pathway import LinearPathway
 
 l1 = symbols('l1', real=True, positive=True)
 F, M, g, t = symbols('F, M, g, t')
@@ -100,7 +100,7 @@ def make_wire(n):
     return A
 
 
-def make_wire_3d(n):
+def make_wire_3d(n, force):
     '''n defines the number of small masses we want to add in the wire''' 
     
     
@@ -197,7 +197,7 @@ def make_wire_3d(n):
     kanel = system.eom_method.to_linearizer()
     #l1 = L/(n+1)
     
-    op_vals = {qs[i]:0 for i in range(0,3*(n+1),3)} | {qs[i]:0 for i in range(1,3*(n+1),3)} |  {qs[i]:-(i-i//3)*l1/2 for i in range(2,3*(n+1),3)} | {F:M*g}
+    op_vals = {qs[i]:0 for i in range(0,3*(n+1),3)} | {qs[i]:0 for i in range(1,3*(n+1),3)} |  {qs[i]:-(i-i//3)*l1/2 for i in range(2,3*(n+1),3)} | {F:force}
     A, B = kanel.linearize(A_and_B=True, op_point=op_vals)
     
     A = A.subs({l1:L/(n+1)})
