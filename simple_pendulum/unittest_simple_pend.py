@@ -1,8 +1,8 @@
 from sympy import Matrix
 from sympy import zeros, symbols
 g, m1, k1, l = symbols('g m1 k1 l', positive=True)
-A = Matrix([[0,0,1,0],[0,0,0,1],[g/l, 0,0,0], [0,k1/m1,0,0]])
-B = Matrix([[0,0], [0,0], [g/l, 0], [0, k1/m1]])
+A = Matrix([[0,0,1,0],[0,0,0,1],[-g/l, 0,0,0], [0,k1/m1,0,0]])
+B = Matrix([[0,0], [0,0], [-g/l, 0], [0, k1/m1]])
 
 import unittest
 from simple_pend import simple_pendulum

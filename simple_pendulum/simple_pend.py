@@ -27,7 +27,7 @@ def simple_pendulum():
     
     #P1.set_pos(O, 0*N.x + 0*N.y + 0*N.z)
     
-    P2.set_pos(system.fixed_point, (q2+q4)*system.frame.y + (q1+q3)*system.frame.x)
+    P2.set_pos(system.fixed_point, -(q2+q4)*system.frame.y + (q1+q3)*system.frame.x)
 
 
 
@@ -46,11 +46,11 @@ def simple_pendulum():
     system.apply_uniform_gravity(-g * system.frame.y)
     #system.add_loads(Force(block, F*block.x))
 
-    linear_path = LinearPathway(P2, system.fixed_point)
+    linear_path = LinearPathway(system.fixed_point, P2)
     force = k1*(smp.sqrt((q1+q3)**2 + (q2+q4)**2) - l_0)
-    linear_path.to_loads(force)
-    system.add_loads(linear_path.to_loads(force)[0])
-    system.add_loads(linear_path.to_loads(force)[1])
+    #linear_path.to_loads(force)
+    #system.add_loads(linear_path.to_loads(force)[0])
+    system.add_loads(linear_path.to_loads(-force)[1])
 
     system.add_coordinates(q1)
     system.add_speeds(u1)
@@ -63,7 +63,7 @@ def simple_pendulum():
     system.validate_system()
     system.form_eoms()
     kanel = system.eom_method.to_linearizer()
-    op_vals = {q1:0, q2:-l, l_0: l-m1*g/k1, q3:0, q4:0}
+    op_vals = {q1:0, q2:l, l_0: l-m1*g/k1, q3:0, q4:0}
     A, B = kanel.linearize(A_and_B=True, op_point=op_vals)
     
     return A, B, kanel
