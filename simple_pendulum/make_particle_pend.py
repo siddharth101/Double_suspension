@@ -2,12 +2,12 @@ import numpy as np
 import sympy as smp
 from sympy import atan2, symbols, zeros
 from sympy.physics.mechanics import (
-    Body, Force, JointsMethod, LinearDamper, LinearPathway,
+    Body, Force, JointsMethod, LinearDamper,
     LinearSpring, Particle, PinJoint, PlanarJoint, Point,
     PrismaticJoint, ReferenceFrame, RigidBody, SphericalJoint,
     System, TorqueActuator, dynamicsymbols, inertia
 )
-
+from pathway import LinearPathway
 
 def particle_pend(n, force=None):
     """n defines the number of small masses we want to add in the wire."""
