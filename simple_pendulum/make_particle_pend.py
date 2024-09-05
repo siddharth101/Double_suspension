@@ -23,7 +23,7 @@ def particle_pend(n, force=None):
     M = symbols('M')
     masses = list(masses) + [M]
 
-    metric = [1, -1, 0]
+    metric = [1, 1, 0]
 
     t, g = symbols('t g')
     l1 = symbols('l1', positive=True)
