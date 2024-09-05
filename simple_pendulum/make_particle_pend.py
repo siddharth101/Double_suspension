@@ -1,25 +1,24 @@
 import numpy as np
-import sympy as smp
-from sympy import atan2, symbols, zeros
+from sympy import symbols
 from sympy.physics.mechanics import (
-    Body, Force, JointsMethod, LinearDamper,
-    LinearSpring, Particle, PinJoint, PlanarJoint, Point,
-    PrismaticJoint, ReferenceFrame, RigidBody, SphericalJoint,
-    System, TorqueActuator, dynamicsymbols, inertia
+    Particle, Point,
+    ReferenceFrame, RigidBody,
+    System, dynamicsymbols
 )
 from pathway import LinearPathway
+
 
 def particle_pend(n, force=None):
     """n defines the number of small masses we want to add in the wire."""
     L = symbols('L', positive=True)
+
     # Creating Reference frames, angles, coordinates, and speeds
     frames = symbols(f'N1:{n + 2}', cls=ReferenceFrame)
     angles = dynamicsymbols(f'alpha1:{n + 2}')
     betas = symbols(f'beta1:{n + 2}')
     qs = dynamicsymbols(f'q1:{2 * (n + 1) + 1}')
     us = dynamicsymbols(f'u1:{2 * (n + 1) + 1}')
-    qc = dynamicsymbols(f'qc1:4')
-    uc = dynamicsymbols(f'uc1:4')
+    qc = dynamicsymbols('qc1:4')
     masses = symbols(f'm1:{n + 1}')
     M = symbols('M')
     masses = list(masses) + [M]
@@ -28,8 +27,8 @@ def particle_pend(n, force=None):
 
     t, g = symbols('t g')
     l1 = symbols('l1', positive=True)
-    natural_lengths = symbols('l0_1:{}'.format(n + 2))
-    ks = symbols('k1:{}'.format(n + 2))
+    natural_lengths = symbols(f'l0_1:{n + 2}')
+    ks = symbols(f'k1:{n + 2}')
 
     # Creating the Points
     ps = symbols(f'P1:{n + 2}', cls=Point)
@@ -41,8 +40,8 @@ def particle_pend(n, force=None):
     for i in range(n):
         ps[i].set_pos(
             system.fixed_point,
-            (qs[j]) * metric[0] * system.frame.x +
-            (qs[j + 1]) * metric[1] * system.frame.y
+            qs[j] * metric[0] * system.frame.x +
+            qs[j + 1] * metric[1] * system.frame.y
         )
         j += 2
 
@@ -52,7 +51,7 @@ def particle_pend(n, force=None):
         (qs[-1] + qc[1]) * metric[1] * system.frame.y
     )
 
-    # Rotating the frames wrt system frame
+    # Rotating the frames with respect to system frame
     for i, j in zip(frames, angles):
         i.orient_axis(system.frame, j, system.frame.z)
 
@@ -78,13 +77,13 @@ def particle_pend(n, force=None):
     for i in range(n + 1):
         bodies[i].masscenter.set_vel(
             system.frame,
-            (us[j]) * system.frame.x + (us[j + 1]) * system.frame.y
+            us[j] * system.frame.x + us[j + 1] * system.frame.y
         )
         j += 2
 
     # Assigning velocities to the RigidBody
     bodies[-1].masscenter.set_vel(
-        system.frame, (us[-2]) * system.frame.x + (us[-1]) * system.frame.y
+        system.frame, us[-2] * system.frame.x + us[-1] * system.frame.y
     )
     bodies[-1].frame.set_ang_vel(frames[-1], 0)
 
@@ -120,10 +119,9 @@ def particle_pend(n, force=None):
 
     forces_values = [i * j for i, j in zip(ks, deltas_)]
 
-    F = symbols('F')
-
-    forces_ = forces_values
-    forces_a = [forces_[0]] + [val for val in forces_[1:] for _ in (0, 1)]
+    forces_a = [forces_values[0]] + [
+        val for val in forces_values[1:] for _ in (0, 1)
+    ]
     force_iterator = 0
     for path in linear_paths:
         system.add_loads(path.to_loads(-forces_a[force_iterator])[1])
@@ -136,6 +134,9 @@ def particle_pend(n, force=None):
     system.form_eoms()
     kanel = system.eom_method.to_linearizer()
 
+    # The operating point is x coordinates are 0
+    # y coordinates are length of wire so l1, 2l1, 3l1 and so on
+    # the additional coordinates of last body go to zero
     op_vals = (
         {qs[i]: 0 for i in range(0, 2 * (n + 1), 2)} |
         {qs[i]: (i - i // 2) * l1 for i in range(1, 2 * (n + 1), 2)} |
@@ -144,6 +145,8 @@ def particle_pend(n, force=None):
 
     A, B = kanel.linearize(A_and_B=True, op_point=op_vals)
 
+    # Substituting the value of natural lengths in terms of l1, masses,
+    # and spring constants
     lsdict = {
         i: l1 - (np.sum(masses[m:]) * g) / k
         for i, m, k in zip(natural_lengths, range(n + 2), ks)
