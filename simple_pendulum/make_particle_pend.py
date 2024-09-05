@@ -13,7 +13,6 @@ def particle_pend(n, force=None):
     """n defines the number of small masses we want to add in the wire."""
     L = symbols('L', positive=True)
     # Creating Reference frames, angles, coordinates, and speeds
-    N = ReferenceFrame('N')
     frames = symbols(f'N1:{n + 2}', cls=ReferenceFrame)
     angles = dynamicsymbols(f'alpha1:{n + 2}')
     betas = symbols(f'beta1:{n + 2}')
@@ -28,15 +27,14 @@ def particle_pend(n, force=None):
     metric = [1, -1, 0]
 
     t, g = symbols('t g')
-    l1, l2 = symbols('l1 l2', positive=True)
-    l_s = symbols('l_1:{}'.format(n + 2))
+    l1 = symbols('l1', positive=True)
+    natural_lengths = symbols('l0_1:{}'.format(n + 2))
     ks = symbols('k1:{}'.format(n + 2))
 
     # Creating the Points
-    O = Point('O')
     ps = symbols(f'P1:{n + 2}', cls=Point)
 
-    system = System(fixed_point=O, frame=N)
+    system = System()
 
     # Setting these points in space
     j = 0
@@ -100,7 +98,7 @@ def particle_pend(n, force=None):
     system.apply_uniform_gravity(-g * system.frame.y)
 
     # Creating linear pathways between the points and applying force along them
-    linear_points = [O] + list(ps)
+    linear_points = [system.fixed_point] + list(ps)
 
     linear_paths = []
     for i in range(1, len(linear_points) - 1):
@@ -115,7 +113,7 @@ def particle_pend(n, force=None):
     for paths in linear_paths[::2]:
         delta_val = (
             paths.attachments[0].pos_from(paths.attachments[1]).magnitude() -
-            l_s[delta_iterator]
+            natural_lengths[delta_iterator]
         )
         deltas_.append(delta_val)
         delta_iterator += 1
@@ -148,7 +146,7 @@ def particle_pend(n, force=None):
 
     lsdict = {
         i: l1 - (np.sum(masses[m:]) * g) / k
-        for i, m, k in zip(l_s, range(n + 2), ks)
+        for i, m, k in zip(natural_lengths, range(n + 2), ks)
     }
 
     A = A.subs(lsdict)
