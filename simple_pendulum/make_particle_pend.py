@@ -74,7 +74,7 @@ def particle_pend(n, force=None):
 
     # Assigning velocities to the Particles
     j = 0
-    for i in range(n + 1):
+    for i in range(n):
         bodies[i].masscenter.set_vel(
             system.frame,
             us[j] * system.frame.x + us[j + 1] * system.frame.y
