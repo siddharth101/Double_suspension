@@ -1,6 +1,6 @@
 from utils import (
-    add_points, make_wire_bodies, get_points, get_deltas, get_linpaths, 
-    get_wires, get_forces, deltas_dict, linpaths_dict, add_wire_info, 
+    add_points, make_wire_bodies, get_points, get_deltas, get_linpaths,
+    get_wires, get_forces, deltas_dict, linpaths_dict, add_wire_info,
     get_force_wire, apply_force_on_body, apply_gravity
 )
 from sympy.physics.mechanics import (
@@ -25,40 +25,49 @@ d7, n7, w7 = symbols('d7 n7 w7', real=True, positive=True)
 d8, d9 = symbols('d8 d9', real=True, positive=True)
 l1, l2, l3, l4, l2a = symbols('l1 l2 l3 l4 l_2a', positive=True)
 
-# Create the model and rigid bodies
-model2 = Model()
-S = model2.add(scmp.RigidBody("S"))
-B = model2.add(scmp.RigidBody("B"))
-C = model2.add(scmp.RigidBody("C"))
-D = model2.add(scmp.RigidBody("D"))
-F = model2.add(scmp.RigidBody("F"))
 
-# Set global positions for the bodies
-S.set_global_position(0, 0, 0)
-B.set_global_position(0, 0, -l1 - d1)
-C.set_global_position(0, 0, -l1 - d1 - d2 - l2 - d3)
-D.set_global_position(0, 0, -l1 - d1 - d2 - l2 - d3 - d4 - l3 - d5)
-F.set_global_position(0, 0, -l1 - d1 - d2 - l2 - d3 - d4 - l3 - d5 - d6 - l4 - d7)
+def set_up_bodies():
+    """Set up the model and bodies with global positions and orientations."""
+    # Create the model and rigid bodies
+    model2 = Model()
+    S = model2.add(scmp.RigidBody("S"))
+    B = model2.add(scmp.RigidBody("B"))
+    C = model2.add(scmp.RigidBody("C"))
+    D = model2.add(scmp.RigidBody("D"))
+    F = model2.add(scmp.RigidBody("F"))
 
-# Set global orientations for the bodies
-S.set_global_orientation(0, 0, 0)
-B.set_global_orientation(0, 0, 0)
-C.set_global_orientation(0, 0, 0)
-D.set_global_orientation(0, 0, 0)
-F.set_global_orientation(0, 0, 0)
+    # Set global positions for the bodies
+    S.set_global_position(0, 0, 0)
+    B.set_global_position(0, 0, -l1 - d1)
+    C.set_global_position(0, 0, -l1 - d1 - d2 - l2 - d3)
+    D.set_global_position(0, 0, -l1 - d1 - d2 - l2 - d3 - d4 - l3 - d5)
+    F.set_global_position(0, 0, -l1 - d1 - d2 - l2 - d3 - d4 - l3 - d5 - d6 - l4 - d7)
 
-# Add attachment points to the bodies
-add_points(body=S, point='P', attachment_points=[w1, n1, 0])
-add_points(body=B, point='B', attachment_points=[w1, n1, d1])
-add_points(body=B, point='C', attachment_points=[w2, n2, -d2])
-add_points(body=C, point='D', attachment_points=[w2, n2, d3])
-add_points(body=C, point='E', attachment_points=[w3, n3, -d4])
-add_points(body=D, point='F', attachment_points=[w3, n3, d5])
-add_points(body=D, point='G', attachment_points=[w4, n4, -d6])
-add_points(body=F, point='H', attachment_points=[w4, n4, d7])
-add_points(body=F, point='J', attachment_points=[w5, n5, -d8])
+    # Set global orientations for the bodies
+    S.set_global_orientation(0, 0, 0)
+    B.set_global_orientation(0, 0, 0)
+    C.set_global_orientation(0, 0, 0)
+    D.set_global_orientation(0, 0, 0)
+    F.set_global_orientation(0, 0, 0)
 
-# Define variables for the number of violin modes and wires
+    # Add attachment points to the bodies
+    add_points(body=S, point='P', attachment_points=[w1, n1, 0])
+    add_points(body=B, point='B', attachment_points=[w1, n1, d1])
+    add_points(body=B, point='C', attachment_points=[w2, n2, -d2])
+    add_points(body=C, point='D', attachment_points=[w2, n2, d3])
+    add_points(body=C, point='E', attachment_points=[w3, n3, -d4])
+    add_points(body=D, point='F', attachment_points=[w3, n3, d5])
+    add_points(body=D, point='G', attachment_points=[w4, n4, -d6])
+    add_points(body=F, point='H', attachment_points=[w4, n4, d7])
+    add_points(body=F, point='J', attachment_points=[w5, n5, -d8])
+
+    return S, B, C, D, F, model2
+
+
+# Set up the bodies and model
+S, B, C, D, F, model2 = set_up_bodies()
+
+# Define variables for the number of violin modes
 n_violin_modes = 1
 
 # Create body and attachment point lists
@@ -67,9 +76,10 @@ attach_points_ = [[S.P1, B.B1], [B.C1, C.D1], [C.E1, D.F1], [D.G1, F.H1]]
 
 
 def get_kane(
-        n_violin_modes=n_violin_modes, bodies_=bodies_,
-        attach_points_=attach_points_, model=model2, suspension_body=S
+    n_violin_modes=n_violin_modes, bodies_=bodies_,
+    attach_points_=attach_points_, model=model2, suspension_body=S
 ):
+    """Calculate the dynamics using Kane's method."""
     n_wire_per_wire = n_violin_modes + 1
 
     points_bodies = get_points(
