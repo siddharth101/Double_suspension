@@ -63,7 +63,9 @@ bodies_ = [[S, B], [B,C], [C,D], [D,F]]
 attach_points_ = [[S.P1, B.B1], [B.C1, C.D1], [C.E1, D.F1], [D.G1, F.H1]]
 
 def get_kane(n_violin_modes=n_violin_modes, 
-             n_wire_per_wire=n_wire_per_wire, bodies_=bodies_, attach_points_=attach_points_, model=model2, suspension_body=S):
+              bodies_=bodies_, attach_points_=attach_points_, model=model2, suspension_body=S):
+
+    n_wire_per_wire=n_violin_modes+1
 
     points_bodies = get_points(n=n_violin_modes,num_blocks=4, model=model2, bodies = bodies_,
                               attach_points = attach_points_, suspension_body=suspension_body)
