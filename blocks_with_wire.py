@@ -136,6 +136,7 @@ def get_kane(
     apply_gravity(model.components['B'])
     apply_gravity(model.components['C'])
     apply_gravity(model.components['D'])
+    apply_gravity(model.components['F']) ### Forgot this earlier
 
     print("The bodies have been set up, forces applied, now solving for dynamics")
     kane = model.extract_statespace()
