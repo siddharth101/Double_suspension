@@ -78,18 +78,18 @@ def get_kane( n_violin_modes=n_violin_modes, bodies=bodies_,
 
     points_bodies = get_points(
             n=n_violin_modes, num_blocks=4, model=model,
-            bodies=bodies_, attach_points=attach_points_, suspension_body=S)
+            bodies=bodies_, attach_points=attach_points_, suspension_body=suspension_body)
 
     model2.add_bodies_system()
 
 
     deltas = deltas_dict(
-        points_body=points_bodies, num_blocks=4, model=model2,
-        suspension_body=S
+        points_body=points_bodies, num_blocks=4, model=model,
+        suspension_body=suspension_body
     )
 
     linpaths = linpaths_dict(
-        points_body=points_bodies, num_blocks=4, model=model2
+        points_body=points_bodies, num_blocks=4, model=model
     )
 
     num_blocks = 4
@@ -131,8 +131,8 @@ def get_kane( n_violin_modes=n_violin_modes, bodies=bodies_,
             points = j[i]['points']
             bodies = j[i]['bodies']
 
-            sys.add_loads(path.to_loads(-force, frame=S.global_frame)[0])
-            sys.add_loads(path.to_loads(-force, frame=S.global_frame)[1])
+            sys.add_loads(path.to_loads(-force, frame=suspension_body.global_frame)[0])
+            sys.add_loads(path.to_loads(-force, frame=suspension_body.global_frame)[1])
 
 
     apply_gravity(model.components['S'])
